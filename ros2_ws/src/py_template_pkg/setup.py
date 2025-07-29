@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'my_py_pkg'
+package_name = 'py_template_pkg'
 
 setup(
     name=package_name,
@@ -13,13 +13,15 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='root',
-    maintainer_email='root@todo.todo',
+    maintainer='ubuntu',
+    maintainer_email='ubuntu@todo.todo',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            "template_exe_name = py_template_pkg.py_node_temp:main",  # change 'template_exe_name' to your executable name
+            # add more executables here if needed
         ],
     },
 )

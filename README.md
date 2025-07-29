@@ -48,6 +48,45 @@ This is a ROS 2 workspace containing custom packages for ROS Jazzy.
 ### my_cpp_pkg
 A C++ package demonstrating basic ROS 2 functionality.
 
+## ROS 2 Architecture Overview
+
+<img src="docs/images/ROS2.png" alt="ROS 2 Nodes Architecture" width="75%">
+
+This workspace is designed to implement a multi-package ROS 2 system with the following architecture:
+
+### Package Structure & Node Communication
+
+The system consists of three main packages, each containing specialized nodes:
+
+#### 1. **Motion Planning Package**
+- **Motion Planning Node**: Core path planning algorithms
+- **Path Correction Node**: Real-time path adjustments based on feedback
+- Communicates with camera package for environmental awareness
+- Sends commands to hardware control package
+
+#### 2. **Camera Package** 
+- **Camera Driver Node**: Hardware interface for camera sensors
+- **Image Processing Node**: Computer vision algorithms for environment perception
+- Additional nodes (...)  for extended functionality
+- Provides visual feedback to motion planning for obstacle avoidance and navigation
+
+#### 3. **Hardware Control Package**
+- **Hardware Driver Node**: Low-level hardware interface
+- **State Publisher Node**: Publishes robot state information
+- Receives motion commands from planning package
+- Provides feedback to motion planning for closed-loop control
+
+### Communication Flow
+
+1. **Sensor Data**: Camera driver captures environmental data
+2. **Processing**: Image processing node extracts relevant information
+3. **Planning**: Motion planning uses visual data to generate paths
+4. **Correction**: Path correction adjusts plans based on real-time feedback
+5. **Execution**: Hardware driver executes motion commands
+6. **Feedback**: State publisher provides current robot state back to planners
+
+This distributed architecture ensures modularity, fault tolerance, and scalability while maintaining real-time performance for robotic applications.
+
 ## Workspace Structure
 
 ```
