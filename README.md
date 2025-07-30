@@ -116,6 +116,294 @@ The Docker container includes:
 - Text editors (vim, nano, gedit)
 - GPU support (NVIDIA)
 
+## ROS 2 Topics: Publishers and Subscribers
+
+![ROS 2 Topics](docs/images/Topic.png)
+
+ROS 2 topics are the primary communication mechanism for real-time data exchange between nodes. They implement a publish-subscribe pattern where nodes can publish data to topics and subscribe to receive data from topics.
+
+### Understanding Topics
+
+Topics are **named channels** that carry messages of a specific type. They enable:
+
+- **Decoupled communication**: Publishers and subscribers don't need to know about each other
+- **Many-to-many communication**: Multiple publishers and subscribers can use the same topic
+- **Asynchronous messaging**: Non-blocking communication between nodes
+- **Type safety**: Each topic has a defined message type
+
+### Key Concepts
+
+#### Publishers
+
+Nodes that **send data** to topics:
+
+```bash
+# Example: A camera node publishing image data
+ros2 run camera_package camera_node  # Publishes to /camera/image_raw
+```
+
+#### Subscribers
+
+Nodes that **receive data** from topics:
+
+```bash
+# Example: An image processing node subscribing to camera data
+ros2 run vision_package image_processor  # Subscribes to /camera/image_raw
+```
+
+#### Topic Names
+
+Topics follow a hierarchical naming convention:
+
+```bash
+/robot/sensors/camera/image      # Hierarchical namespace
+/cmd_vel                         # Simple name
+/robot1/odom                     # Robot-specific namespace
+```
+
+### Working with Topics
+
+#### List All Active Topics
+
+```bash
+ros2 topic list                 # Show all topics
+ros2 topic list -t              # Show topics with message types
+ros2 topic list --verbose       # Detailed information
+```
+
+#### Get Topic Information
+
+```bash
+ros2 topic info /topic_name     # Show publishers and subscribers
+ros2 topic info /cmd_vel        # Example for velocity commands
+ros2 topic type /topic_name     # Show message type only
+ros2 topic hz /topic_name       # Show publishing frequency
+```
+
+#### Monitor Topic Data
+
+```bash
+ros2 topic echo /topic_name     # Display messages in real-time
+ros2 topic echo /cmd_vel        # Monitor velocity commands
+ros2 topic echo /scan --qos-profile sensor_data  # With QoS profile
+```
+
+#### Publish to Topics Manually
+
+```bash
+# Basic publishing
+ros2 topic pub /topic_name msg_type "data"
+
+# Publish velocity command
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "
+linear:
+  x: 1.0
+  y: 0.0
+  z: 0.0
+angular:
+  x: 0.0
+  y: 0.0
+  z: 0.5"
+
+# Publish once and exit
+ros2 topic pub --once /topic_name msg_type "data"
+
+# Publish at specific rate (10 Hz)
+ros2 topic pub --rate 10 /topic_name msg_type "data"
+```
+
+### Advanced Topic Operations
+
+#### Changing Topic Names on the Fly
+
+##### Command Line Remapping
+
+```bash
+# Remap topic when launching a node
+ros2 run package_name node_name --ros-args --remap old_topic:=new_topic
+
+# Example: Change cmd_vel to robot1/cmd_vel
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap cmd_vel:=robot1/cmd_vel
+
+# Multiple remappings
+ros2 run my_package my_node --ros-args \
+  --remap input_topic:=new_input \
+  --remap output_topic:=new_output
+```
+
+##### Launch File Remapping
+
+```python
+# In a launch file
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='my_package',
+            executable='my_node',
+            remappings=[
+                ('old_topic', 'new_topic'),
+                ('cmd_vel', 'robot1/cmd_vel')
+            ]
+        )
+    ])
+```
+
+##### Namespace Remapping
+
+```bash
+# Apply namespace to all topics
+ros2 run package_name node_name --ros-args --remap __ns:=/robot1
+
+# This changes /cmd_vel to /robot1/cmd_vel automatically
+```
+
+#### Topic Bridging and Relay
+
+```bash
+# Bridge between different topic names
+ros2 run topic_tools relay source_topic target_topic
+
+# Example: Bridge cmd_vel to robot_cmd_vel
+ros2 run topic_tools relay /cmd_vel /robot_cmd_vel
+```
+
+#### Quality of Service (QoS) Profiles
+
+```bash
+# Publish with specific QoS
+ros2 topic pub /topic_name msg_type "data" --qos-profile sensor_data
+ros2 topic pub /topic_name msg_type "data" --qos-reliability reliable
+ros2 topic pub /topic_name msg_type "data" --qos-durability transient_local
+
+# Available QoS profiles:
+# - sensor_data: Best effort, volatile
+# - system_default: Reliable, volatile  
+# - parameter_events: Reliable, volatile
+# - services_default: Reliable, volatile
+```
+
+### Topic Discovery and Debugging
+
+#### Find Message Structure
+
+```bash
+ros2 interface show geometry_msgs/msg/Twist    # Show message definition
+ros2 interface list                            # List all message types
+ros2 interface package geometry_msgs           # Show package interfaces
+```
+
+#### Topic Performance Analysis
+
+```bash
+ros2 topic hz /topic_name              # Publishing frequency
+ros2 topic bw /topic_name              # Bandwidth usage
+ros2 topic delay /topic_name           # Message latency
+ros2 topic find msg_type               # Find topics of specific type
+```
+
+#### Debugging Connection Issues
+
+```bash
+# Check if topic exists
+ros2 topic list | grep topic_name
+
+# Check publishers and subscribers
+ros2 topic info /topic_name
+
+# Monitor topic activity
+ros2 topic echo /topic_name --no-arr   # Without arrays
+ros2 topic echo /topic_name --field data.position  # Specific field only
+```
+
+### Practical Examples
+
+#### Robot Teleoperation
+
+```bash
+# Terminal 1: Start turtlesim
+ros2 run turtlesim turtlesim_node
+
+# Terminal 2: Manual control
+ros2 topic pub --rate 1 /turtle1/cmd_vel geometry_msgs/msg/Twist "
+linear:
+  x: 2.0
+angular:
+  z: 1.8"
+
+# Terminal 3: Monitor position
+ros2 topic echo /turtle1/pose
+```
+
+#### Multi-Robot Setup
+
+```bash
+# Robot 1 namespace
+ros2 run turtlesim turtlesim_node --ros-args --remap __ns:=/robot1
+
+# Robot 2 namespace  
+ros2 run turtlesim turtlesim_node --ros-args --remap __ns:=/robot2
+
+# Control robot 1
+ros2 topic pub /robot1/turtle1/cmd_vel geometry_msgs/msg/Twist "..."
+
+# Control robot 2
+ros2 topic pub /robot2/turtle1/cmd_vel geometry_msgs/msg/Twist "..."
+```
+
+#### Data Recording and Playback
+
+```bash
+# Record topics to bag file
+ros2 bag record /topic1 /topic2 -o my_recording
+
+# Record all topics
+ros2 bag record -a
+
+# Playback recorded data
+ros2 bag play my_recording
+```
+
+### Common Message Types
+
+#### Geometry Messages
+
+```bash
+geometry_msgs/msg/Twist        # Velocity (linear + angular)
+geometry_msgs/msg/Pose         # Position + orientation
+geometry_msgs/msg/PoseStamped  # Pose with timestamp
+geometry_msgs/msg/Point        # 3D point
+```
+
+#### Sensor Messages
+
+```bash
+sensor_msgs/msg/Image          # Camera images
+sensor_msgs/msg/LaserScan      # Lidar data
+sensor_msgs/msg/Imu            # IMU sensor data
+sensor_msgs/msg/PointCloud2    # 3D point clouds
+```
+
+#### Standard Messages
+
+```bash
+std_msgs/msg/String            # Text data
+std_msgs/msg/Int32             # Integer numbers
+std_msgs/msg/Float64           # Floating point numbers
+std_msgs/msg/Bool              # Boolean values
+```
+
+### Best Practices
+
+1. **Use meaningful topic names**: `/robot/sensors/camera/image` instead of `/cam`
+2. **Follow naming conventions**: Use lowercase with underscores
+3. **Choose appropriate QoS**: Sensor data vs. command data have different requirements
+4. **Monitor topic frequency**: Ensure publishers match expected rates
+5. **Use namespaces**: For multi-robot systems or component organization
+6. **Document topic interfaces**: Clearly specify message types and semantics
+
 ## ROS 2 CLI Commands Reference
 
 ROS 2 provides a comprehensive command-line interface for interacting with the ROS ecosystem. Here are the essential commands:
@@ -123,7 +411,9 @@ ROS 2 provides a comprehensive command-line interface for interacting with the R
 ### Core Commands
 
 #### `ros2 run`
+
 Execute a specific node from a package:
+
 ```bash
 ros2 run <package_name> <executable_name>
 ros2 run my_py_pkg my_first_node
@@ -386,6 +676,192 @@ RQT allows you to save custom layouts (perspectives) with multiple plugins:
 3. Arrange them in tabs or docked windows
 4. Save perspective: Perspectives → Create Perspective
 5. Load later: Perspectives → Import/Export
+
+## **🚀 NODE NAMING AND REMAPPING - CRITICAL FOR MULTI-INSTANCE DEPLOYMENTS**
+
+### **Why This Matters**
+When deploying real robotics systems, you often need **multiple instances of the same node** - like multiple temperature sensors, cameras, or motors. ROS 2 provides powerful remapping capabilities to handle this elegantly.
+
+### **🔧 Node Name Remapping**
+
+#### **Method 1: Change Node Name at Launch**
+```bash
+# Run the same node with different names
+ros2 run <package> <executable> --ros-args --remap __node:=<new_name>
+
+# Example: Multiple temperature sensors
+ros2 run sensor_pkg temp_sensor --ros-args --remap __node:=temp_sensor_kitchen
+ros2 run sensor_pkg temp_sensor --ros-args --remap __node:=temp_sensor_bedroom
+ros2 run sensor_pkg temp_sensor --ros-args --remap __node:=temp_sensor_garage
+```
+
+#### **Method 2: Topic and Service Remapping**
+```bash
+# Remap topics for different sensor instances
+ros2 run sensor_pkg temp_sensor --ros-args \
+  --remap __node:=temp_sensor_1 \
+  --remap temperature:=kitchen/temperature \
+  --remap /diagnostics:=/kitchen/diagnostics
+
+ros2 run sensor_pkg temp_sensor --ros-args \
+  --remap __node:=temp_sensor_2 \
+  --remap temperature:=bedroom/temperature \
+  --remap /diagnostics:=/bedroom/diagnostics
+```
+
+### **🏗️ Namespace-Based Organization**
+
+#### **Using Namespaces for Clean Separation**
+```bash
+# Launch nodes in different namespaces
+ros2 run sensor_pkg temp_sensor --ros-args --remap __ns:=/kitchen
+ros2 run sensor_pkg temp_sensor --ros-args --remap __ns:=/bedroom
+ros2 run sensor_pkg temp_sensor --ros-args --remap __ns:=/garage
+
+# This creates:
+# /kitchen/temp_sensor node publishing to /kitchen/temperature
+# /bedroom/temp_sensor node publishing to /bedroom/temperature  
+# /garage/temp_sensor node publishing to /garage/temperature
+```
+
+#### **Combined Namespace + Node Naming**
+```bash
+# Ultimate flexibility: namespace + custom node name
+ros2 run sensor_pkg temp_sensor --ros-args \
+  --remap __ns:=/sensors \
+  --remap __node:=kitchen_temp \
+  --remap temperature:=kitchen_data
+
+# Result: /sensors/kitchen_temp node publishing to /sensors/kitchen_data
+```
+
+### **📊 Real-World Example: Multi-Camera System**
+
+```bash
+# Terminal 1: Front camera
+ros2 run camera_pkg camera_driver --ros-args \
+  --remap __node:=front_camera \
+  --remap image_raw:=front/image_raw \
+  --remap camera_info:=front/camera_info
+
+# Terminal 2: Back camera  
+ros2 run camera_pkg camera_driver --ros-args \
+  --remap __node:=back_camera \
+  --remap image_raw:=back/image_raw \
+  --remap camera_info:=back/camera_info
+
+# Terminal 3: Left camera
+ros2 run camera_pkg camera_driver --ros-args \
+  --remap __node:=left_camera \
+  --remap image_raw:=left/image_raw \
+  --remap camera_info:=left/camera_info
+
+# Now you have 3 distinct camera nodes with organized topics!
+```
+
+### **⚡ Dynamic Parameter Configuration**
+
+#### **Set Different Parameters per Instance**
+```bash
+# Temperature sensor with different configurations
+ros2 run sensor_pkg temp_sensor --ros-args \
+  --remap __node:=high_precision_temp \
+  --param sampling_rate:=100.0 \
+  --param precision:=high
+
+ros2 run sensor_pkg temp_sensor --ros-args \
+  --remap __node:=low_power_temp \
+  --param sampling_rate:=1.0 \
+  --param precision:=low \
+  --param power_mode:=eco
+```
+
+### **🎯 Launch File Integration**
+
+#### **Scaling with Launch Files**
+```python
+# launch/multi_sensors.launch.py
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='sensor_pkg',
+            executable='temp_sensor',
+            name='kitchen_temp',
+            namespace='sensors',
+            remappings=[
+                ('temperature', 'kitchen/temp'),
+                ('status', 'kitchen/status')
+            ],
+            parameters=[{'sampling_rate': 10.0}]
+        ),
+        Node(
+            package='sensor_pkg', 
+            executable='temp_sensor',
+            name='bedroom_temp',
+            namespace='sensors',
+            remappings=[
+                ('temperature', 'bedroom/temp'),
+                ('status', 'bedroom/status')  
+            ],
+            parameters=[{'sampling_rate': 5.0}]
+        )
+    ])
+```
+
+### **🔍 Verification Commands**
+
+```bash
+# Check all running nodes
+ros2 node list
+
+# Check topics from each instance
+ros2 topic list | grep temperature
+
+# Monitor specific sensor
+ros2 topic echo /kitchen/temperature
+
+# Check node information  
+ros2 node info /sensors/kitchen_temp
+
+# Verify remappings worked
+rqt_graph  # Visual verification
+```
+
+### **💡 Pro Tips for Multi-Instance Deployments**
+
+1. **Consistent Naming Convention:**
+   ```bash
+   # Good: Predictable patterns
+   /sensors/kitchen_temp, /sensors/bedroom_temp
+   
+   # Bad: Inconsistent naming  
+   /temp1, /kitchen_sensor, /bedroom_temperature_node
+   ```
+
+2. **Use Namespaces for Grouping:**
+   ```bash
+   # Group related sensors
+   /sensors/kitchen_temp
+   /sensors/kitchen_humidity
+   /sensors/kitchen_pressure
+   ```
+
+3. **Parameter Files for Complex Configs:**
+   ```bash
+   ros2 run sensor_pkg temp_sensor --ros-args \
+     --params-file config/kitchen_sensor.yaml \
+     --remap __node:=kitchen_temp
+   ```
+
+4. **Service Remapping Too:**
+   ```bash
+   ros2 run sensor_pkg temp_sensor --ros-args \
+     --remap __node:=kitchen_temp \
+     --remap calibrate:=kitchen/calibrate_sensor
+   ```
 
 ### Examples
 

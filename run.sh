@@ -26,8 +26,9 @@ if [ ! -d "/home/hfp/Github/ROS2/" ]; then
     mkdir -p /home/hfp/Github/ROS2/
 fi
 
-# Clean up any existing container named ros2
-docker rm -f ros2 2>/dev/null || true
+# Clean up any existing container named ROS2_h
+docker stop ROS2_h 2>/dev/null || true
+docker rm -f ROS2_h 2>/dev/null || true
 
 echo "run the following command to start interactive container"
 echo "docker exec -it ROS2_h bash"

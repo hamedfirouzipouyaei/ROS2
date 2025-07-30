@@ -21,7 +21,19 @@ RUN apt-get update && apt-get install -y \
     ros-dev-tools \
     ros-jazzy-demo-nodes-cpp \
     ros-jazzy-demo-nodes-py \
-    gedit \ 
+    ros-jazzy-rqt \
+    ros-jazzy-rqt-common-plugins \
+    ros-jazzy-rqt-graph \
+    ros-jazzy-rqt-plot \
+    ros-jazzy-rqt-console \
+    ros-jazzy-rqt-bag \
+    ros-jazzy-rqt-image-view \
+    ros-jazzy-rqt-service-caller \
+    ros-jazzy-rqt-topic \
+    ros-jazzy-rqt-tf-tree \
+    ros-jazzy-turtlesim \
+    ros-jazzy-turtle-tf2-py \
+    gedit \
     cmake \
     ninja-build \
     g++ \
