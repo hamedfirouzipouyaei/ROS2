@@ -2,6 +2,28 @@
 
 This is a ROS 2 workspace containing custom packages for ROS Jazzy.
 
+## Table of contents
+
+- Learning manual: from first node to a running system
+  - Step 0: Set up the environment (Docker or local)
+  - Step 1: Create a package (Python)
+  - Step 2: Write a publisher node
+  - Step 3: Write a subscriber node
+  - Step 4: Register executables (so ros2 run works)
+  - Step 5: Build and source with colcon
+  - Step 6: Run and inspect topics
+  - Step 7: Remap names and use namespaces
+  - Step 8: Launch files (run multiple nodes together)
+  - Step 9: Record and replay with ros2 bag
+  - Step 10: Visualize with rqt and rqt_graph
+- Appendices (deep dives and references)
+  - Appendix A: CLI Commands Reference
+  - Appendix B: Topics Deep Dive
+  - Appendix C: Node naming and remapping
+  - Appendix D: Registering executables for ros2 run (Python and C++)
+  - Appendix E: RQT and visualization tools
+  - Appendix F: Example architecture (illustrative)
+
 ## Setup
 
 ### Prerequisites
@@ -50,15 +72,193 @@ This is a ROS 2 workspace containing custom packages for ROS Jazzy.
    source install/setup.bash
    ```
 
+## Learning manual: from first node to a running system
+
+Follow these steps in order. Each step is small and practical. Code and commands are minimal and copy-paste friendly.
+
+### Step 0: Set up the environment (Docker or local)
+
+- Docker (recommended): use the Quick Start above (build.sh, run.sh). Inside the container, your workspace is under `/home/ROS2/`.
+- Local: install ROS 2 Jazzy and source `/opt/ros/jazzy/setup.bash` before building.
+
+### Step 1: Create a package (Python)
+
+```bash
+cd ros2_ws/src
+ros2 pkg create my_py_pkg --build-type ament_python --dependencies rclpy std_msgs
+```
+
+This generates a Python package with boilerplate files.
+
+### Step 2: Write a publisher node
+
+Create `ros2_ws/src/my_py_pkg/my_py_pkg/talker.py`:
+
+```python
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+
+class Talker(Node):
+  def __init__(self):
+    super().__init__('talker')
+    self.pub = self.create_publisher(String, 'chatter', 10)
+    self.timer = self.create_timer(0.5, self.publish)
+
+  def publish(self):
+    msg = String()
+    msg.data = 'hello from talker'
+    self.pub.publish(msg)
+    self.get_logger().info(f'Publishing: {msg.data}')
+
+
+def main(args=None):
+  rclpy.init(args=args)
+  node = Talker()
+  rclpy.spin(node)
+  rclpy.shutdown()
+
+
+if __name__ == '__main__':
+  main()
+```
+
+### Step 3: Write a subscriber node
+
+Create `ros2_ws/src/my_py_pkg/my_py_pkg/listener.py`:
+
+```python
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+
+class Listener(Node):
+  def __init__(self):
+    super().__init__('listener')
+    self.sub = self.create_subscription(String, 'chatter', self.cb, 10)
+
+  def cb(self, msg: String):
+    self.get_logger().info(f'Received: {msg.data}')
+
+
+def main(args=None):
+  rclpy.init(args=args)
+  node = Listener()
+  rclpy.spin(node)
+  rclpy.shutdown()
+
+
+if __name__ == '__main__':
+  main()
+```
+
+### Step 4: Register executables (so `ros2 run` works)
+
+Edit `ros2_ws/src/my_py_pkg/setup.py` and add console scripts:
+
+```python
+from setuptools import setup
+
+setup(
+  name='my_py_pkg',
+  # ... other setup args ...
+  entry_points={
+    'console_scripts': [
+      'talker = my_py_pkg.talker:main',
+      'listener = my_py_pkg.listener:main',
+    ],
+  },
+)
+```
+
+Also ensure runtime dependencies in `ros2_ws/src/my_py_pkg/package.xml`:
+
+```xml
+<exec_depend>rclpy</exec_depend>
+<exec_depend>std_msgs</exec_depend>
+```
+
+### Step 5: Build and source with colcon
+
+```bash
+cd ~/Github/ROS2/ros2_ws
+colcon build --packages-select my_py_pkg
+source install/setup.bash
+```
+
+### Step 6: Run and inspect topics
+
+```bash
+# Terminal 1
+ros2 run my_py_pkg talker
+
+# Terminal 2
+ros2 run my_py_pkg listener
+
+# Inspect
+ros2 topic list -t
+ros2 topic echo /chatter
+```
+
+### Step 7: Remap names and use namespaces
+
+```bash
+# Remap topic name
+ros2 run my_py_pkg talker --ros-args --remap chatter:=/robot1/chatter
+
+# Apply a namespace to a node
+ros2 run my_py_pkg listener --ros-args --remap __ns:=/robot1
+```
+
+### Step 8: Launch files (run multiple nodes together)
+
+Create `ros2_ws/src/my_py_pkg/launch/talk_listen.launch.py`:
+
+```python
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+
+def generate_launch_description():
+  return LaunchDescription([
+    Node(package='my_py_pkg', executable='talker'),
+    Node(package='my_py_pkg', executable='listener')
+  ])
+```
+
+Run it:
+
+```bash
+ros2 launch my_py_pkg talk_listen.launch.py
+```
+
+### Step 9: Record and replay with ros2 bag
+
+```bash
+ros2 bag record /chatter -o demo_bag
+ros2 bag play demo_bag
+```
+
+### Step 10: Visualize with rqt and rqt_graph
+
+```bash
+rqt_graph   # visualize nodes and topics
+rqt_topic   # inspect and publish messages
+```
+
 ## Packages
 
 ### my_cpp_pkg
 
 A C++ package demonstrating basic ROS 2 functionality.
 
-## ROS 2 Architecture Overview
+## Appendix F: Example architecture (illustrative)
 
-<img src="docs/images/ROS2.png" alt="ROS 2 Nodes Architecture" width="75%">
+![ROS 2 Nodes Architecture](docs/images/ROS2.png)
+
+_Note: This diagram is illustrative — it shows example roles and connections, not a definitive or exhaustive design._
 
 This workspace is designed to implement a multi-package ROS 2 system with the following architecture:
 
@@ -100,7 +300,7 @@ This distributed architecture ensures modularity, fault tolerance, and scalabili
 
 ## Workspace Structure
 
-```
+```text
 ros2_ws/
 ├── src/
 │   └── my_cpp_pkg/
@@ -128,9 +328,11 @@ The Docker container includes:
 - Text editors (vim, nano, gedit)
 - GPU support (NVIDIA)
 
-## ROS 2 Topics: Publishers and Subscribers
+## Appendix B: Topics Deep Dive (Publishers and Subscribers)
 
 ![ROS 2 Topics](docs/images/Topic.png)
+
+_Note: The diagram and examples are illustrative to explain concepts quickly; adapt names and message types to your project._
 
 ROS 2 topics are the primary communication mechanism for real-time data exchange between nodes. They implement a publish-subscribe pattern where nodes can publish data to topics and subscribe to receive data from topics.
 
@@ -365,7 +567,7 @@ ros2 topic pub /robot1/turtle1/cmd_vel geometry_msgs/msg/Twist "..."
 ros2 topic pub /robot2/turtle1/cmd_vel geometry_msgs/msg/Twist "..."
 ```
 
-#### Data Recording and Playback
+### Recording and Playback (examples)
 
 ```bash
 # Record topics to bag file
@@ -416,7 +618,7 @@ std_msgs/msg/Bool              # Boolean values
 5. **Use namespaces**: For multi-robot systems or component organization
 6. **Document topic interfaces**: Clearly specify message types and semantics
 
-## ROS 2 CLI Commands Reference
+## Appendix A: ROS 2 CLI Commands Reference
 
 ROS 2 provides a comprehensive command-line interface for interacting with the ROS ecosystem. Here are the essential commands:
 
@@ -527,7 +729,7 @@ ros2 param dump <node>           # Export all parameters
 ros2 param load <node> <file>    # Load parameters from file
 ```
 
-### Data Recording and Playback
+### Recording and Playback (ros2 bag)
 
 #### `ros2 bag`
 
@@ -949,7 +1151,7 @@ def main():
     ...
 ```
 
-2. Add a console entry point in `setup.py`:
+1. Add a console entry point in `setup.py`:
 
 ```python
 from setuptools import setup
@@ -966,21 +1168,21 @@ setup(
 )
 ```
 
-3. Declare runtime deps (example) in `package.xml`:
+1. Declare runtime deps (example) in `package.xml`:
 
 ```xml
 <exec_depend>rclpy</exec_depend>
 <exec_depend>example_interfaces</exec_depend>
 ```
 
-4. Build and source:
+1. Build and source:
 
 ```bash
 colcon build --packages-select camera_pkg
 source install/setup.bash
 ```
 
-5. Run:
+1. Run:
 
 ```bash
 ros2 run camera_pkg camera_transmission
