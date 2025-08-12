@@ -5,22 +5,26 @@ This is a ROS 2 workspace containing custom packages for ROS Jazzy.
 ## Setup
 
 ### Prerequisites
+
 - Docker with NVIDIA Container Toolkit (for GPU support)
 - ROS 2 Jazzy
 
 ### Quick Start with Docker
 
 1. **Build the Docker image:**
+
    ```bash
    ./build.sh
    ```
 
 2. **Run the container:**
+
    ```bash
    ./run.sh
    ```
 
 3. **Build the workspace (inside container):**
+
    ```bash
    /home/ROS2/build_workspace.sh
    ```
@@ -28,17 +32,20 @@ This is a ROS 2 workspace containing custom packages for ROS Jazzy.
 ### Manual Setup (without Docker)
 
 1. **Source ROS 2:**
+
    ```bash
    source /opt/ros/jazzy/setup.bash
    ```
 
 2. **Build the workspace:**
+
    ```bash
    cd ros2_ws
    colcon build
    ```
 
 3. **Source the workspace:**
+
    ```bash
    source install/setup.bash
    ```
@@ -46,6 +53,7 @@ This is a ROS 2 workspace containing custom packages for ROS Jazzy.
 ## Packages
 
 ### my_cpp_pkg
+
 A C++ package demonstrating basic ROS 2 functionality.
 
 ## ROS 2 Architecture Overview
@@ -59,18 +67,21 @@ This workspace is designed to implement a multi-package ROS 2 system with the fo
 The system consists of three main packages, each containing specialized nodes:
 
 #### 1. **Motion Planning Package**
+
 - **Motion Planning Node**: Core path planning algorithms
 - **Path Correction Node**: Real-time path adjustments based on feedback
 - Communicates with camera package for environmental awareness
 - Sends commands to hardware control package
 
-#### 2. **Camera Package** 
+#### 2. **Camera Package**
+
 - **Camera Driver Node**: Hardware interface for camera sensors
 - **Image Processing Node**: Computer vision algorithms for environment perception
 - Additional nodes (...)  for extended functionality
 - Provides visual feedback to motion planning for obstacle avoidance and navigation
 
 #### 3. **Hardware Control Package**
+
 - **Hardware Driver Node**: Low-level hardware interface
 - **State Publisher Node**: Publishes robot state information
 - Receives motion commands from planning package
@@ -108,6 +119,7 @@ ros2_ws/
 ## Docker Environment
 
 The Docker container includes:
+
 - ROS 2 Jazzy
 - Development tools (cmake, ninja, gcc, clang, etc.)
 - Code analysis tools (cppcheck, clang-tidy, etc.)
@@ -421,14 +433,18 @@ ros2 run demo_nodes_cpp talker
 ```
 
 #### `ros2 launch`
+
 Launch multiple nodes and configure complex systems:
+
 ```bash
 ros2 launch <package_name> <launch_file>
 ros2 launch demo_nodes_cpp talker_listener.launch.py
 ```
 
 #### `ros2 pkg`
+
 Package management and information:
+
 ```bash
 ros2 pkg list                    # List all packages
 ros2 pkg create <pkg_name>       # Create new package
@@ -439,7 +455,9 @@ ros2 pkg executables <pkg_name>  # List executables in package
 ### Communication Commands
 
 #### `ros2 topic`
+
 Manage and inspect ROS topics:
+
 ```bash
 ros2 topic list                  # List all active topics
 ros2 topic echo <topic_name>     # Display messages on topic
@@ -450,7 +468,9 @@ ros2 topic bw <topic_name>       # Show bandwidth usage
 ```
 
 #### `ros2 service`
+
 Interact with ROS services:
+
 ```bash
 ros2 service list                # List all services
 ros2 service call <service> <srv_type> <data>  # Call a service
@@ -459,7 +479,9 @@ ros2 service find <srv_type>     # Find services of specific type
 ```
 
 #### `ros2 action`
+
 Work with ROS actions (goal-oriented tasks):
+
 ```bash
 ros2 action list                 # List all action servers
 ros2 action info <action>        # Show action information
@@ -469,7 +491,9 @@ ros2 action send_goal <action> <action_type> <goal>  # Send goal
 ### Node Management
 
 #### `ros2 node`
+
 Inspect and manage running nodes:
+
 ```bash
 ros2 node list                   # List all running nodes
 ros2 node info <node_name>       # Show node details
@@ -479,7 +503,9 @@ ros2 node kill <node_name>       # Terminate a node
 ### Interface Commands
 
 #### `ros2 interface`
+
 Examine message, service, and action definitions:
+
 ```bash
 ros2 interface list              # List all interfaces
 ros2 interface show <interface>  # Show interface definition
@@ -490,7 +516,9 @@ ros2 interface packages          # List packages with interfaces
 ### Parameter Management
 
 #### `ros2 param`
+
 Configure node parameters:
+
 ```bash
 ros2 param list                  # List all parameters
 ros2 param get <node> <param>    # Get parameter value
@@ -502,7 +530,9 @@ ros2 param load <node> <file>    # Load parameters from file
 ### Data Recording and Playback
 
 #### `ros2 bag`
+
 Record and replay ROS data:
+
 ```bash
 ros2 bag record <topic1> <topic2>  # Record specific topics
 ros2 bag record -a               # Record all topics
@@ -514,14 +544,18 @@ ros2 bag reindex <bag_file>      # Reindex corrupted bag
 ### System Information
 
 #### `ros2 doctor`
+
 Diagnose ROS 2 setup and configuration:
+
 ```bash
 ros2 doctor                      # Check system health
 ros2 doctor --report             # Generate detailed report
 ```
 
 #### `ros2 wtf`
+
 Show comprehensive system status (What's This For?):
+
 ```bash
 ros2 wtf                         # Display system overview
 ```
@@ -529,7 +563,9 @@ ros2 wtf                         # Display system overview
 ### Debugging and Development
 
 #### `ros2 component`
+
 Manage component-based nodes:
+
 ```bash
 ros2 component list              # List component containers
 ros2 component types             # Show available component types
@@ -537,7 +573,9 @@ ros2 component load <container> <component>  # Load component
 ```
 
 #### `ros2 lifecycle`
+
 Control lifecycle nodes:
+
 ```bash
 ros2 lifecycle list              # List lifecycle nodes
 ros2 lifecycle get <node>        # Get current state
@@ -547,6 +585,7 @@ ros2 lifecycle set <node> <state>  # Change node state
 ### Visualization and GUI Tools
 
 #### `rqt`
+
 RQT is the main GUI framework for ROS 2, providing a plugin-based interface for various tools:
 
 ```bash
@@ -556,6 +595,7 @@ rqt --standalone <plugin_name>   # Launch specific plugin directly
 ```
 
 **Common RQT Plugins:**
+
 - **rqt_graph**: Visualize node and topic connections
 - **rqt_plot**: Real-time data plotting
 - **rqt_console**: View log messages
@@ -566,6 +606,7 @@ rqt --standalone <plugin_name>   # Launch specific plugin directly
 - **rqt_image_view**: Display camera feeds
 
 #### `rqt_graph`
+
 Visualize the ROS computation graph (nodes, topics, services):
 
 ```bash
@@ -574,6 +615,7 @@ rqt_graph --force-discover       # Force discovery of all connections
 ```
 
 **Features:**
+
 - **Node View**: Shows running nodes and their connections
 - **Topic View**: Displays topics and their publishers/subscribers
 - **Service View**: Visualizes service connections
@@ -582,6 +624,7 @@ rqt_graph --force-discover       # Force discovery of all connections
 **Usage Examples:**
 
 1. **Basic Graph Visualization:**
+
    ```bash
    # Terminal 1: Start some demo nodes
    ros2 run demo_nodes_cpp talker
@@ -594,6 +637,7 @@ rqt_graph --force-discover       # Force discovery of all connections
    ```
 
 2. **Analyze Complex Systems:**
+
    ```bash
    # Launch a complex system (e.g., navigation stack)
    ros2 launch nav2_bringup tb3_simulation_launch.py
@@ -612,6 +656,7 @@ rqt_graph --force-discover       # Force discovery of all connections
 #### Other Useful RQT Tools
 
 **rqt_plot - Real-time Data Visualization:**
+
 ```bash
 rqt_plot                         # Launch plotting interface
 rqt_plot /topic_name/field       # Plot specific message field
@@ -619,29 +664,35 @@ rqt_plot /turtle1/pose/x /turtle1/pose/y  # Plot multiple fields
 ```
 
 **rqt_console - Log Message Viewer:**
+
 ```bash
 rqt_console                      # View system log messages
 ```
+
 - Filter by severity (Debug, Info, Warn, Error, Fatal)
 - Filter by node name
 - Search log messages
 
 **rqt_service_caller - Service GUI:**
+
 ```bash
 rqt_service_caller               # GUI for calling services
 ```
 
 **rqt_topic - Topic Monitor:**
+
 ```bash
 rqt_topic                        # Monitor and publish to topics
 ```
 
 **rqt_bag - Bag File Viewer:**
+
 ```bash
 rqt_bag <bag_file>               # View and analyze bag files
 ```
 
 **rqt_image_view - Camera Feed Viewer:**
+
 ```bash
 rqt_image_view                   # Display camera topics
 ```
@@ -649,6 +700,7 @@ rqt_image_view                   # Display camera topics
 ### RQT Integration Examples
 
 **Complete Debugging Session:**
+
 ```bash
 # 1. Start your nodes
 ros2 run my_package my_node
@@ -671,6 +723,7 @@ rqt  # Then add multiple plugins in tabs/docks
 
 **Custom RQT Perspective:**
 RQT allows you to save custom layouts (perspectives) with multiple plugins:
+
 1. Launch `rqt`
 2. Add desired plugins (Plugins menu)
 3. Arrange them in tabs or docked windows
@@ -680,11 +733,13 @@ RQT allows you to save custom layouts (perspectives) with multiple plugins:
 ## **🚀 NODE NAMING AND REMAPPING - CRITICAL FOR MULTI-INSTANCE DEPLOYMENTS**
 
 ### **Why This Matters**
+
 When deploying real robotics systems, you often need **multiple instances of the same node** - like multiple temperature sensors, cameras, or motors. ROS 2 provides powerful remapping capabilities to handle this elegantly.
 
 ### **🔧 Node Name Remapping**
 
 #### **Method 1: Change Node Name at Launch**
+
 ```bash
 # Run the same node with different names
 ros2 run <package> <executable> --ros-args --remap __node:=<new_name>
@@ -696,6 +751,7 @@ ros2 run sensor_pkg temp_sensor --ros-args --remap __node:=temp_sensor_garage
 ```
 
 #### **Method 2: Topic and Service Remapping**
+
 ```bash
 # Remap topics for different sensor instances
 ros2 run sensor_pkg temp_sensor --ros-args \
@@ -712,6 +768,7 @@ ros2 run sensor_pkg temp_sensor --ros-args \
 ### **🏗️ Namespace-Based Organization**
 
 #### **Using Namespaces for Clean Separation**
+
 ```bash
 # Launch nodes in different namespaces
 ros2 run sensor_pkg temp_sensor --ros-args --remap __ns:=/kitchen
@@ -725,6 +782,7 @@ ros2 run sensor_pkg temp_sensor --ros-args --remap __ns:=/garage
 ```
 
 #### **Combined Namespace + Node Naming**
+
 ```bash
 # Ultimate flexibility: namespace + custom node name
 ros2 run sensor_pkg temp_sensor --ros-args \
@@ -762,6 +820,7 @@ ros2 run camera_pkg camera_driver --ros-args \
 ### **⚡ Dynamic Parameter Configuration**
 
 #### **Set Different Parameters per Instance**
+
 ```bash
 # Temperature sensor with different configurations
 ros2 run sensor_pkg temp_sensor --ros-args \
@@ -779,6 +838,7 @@ ros2 run sensor_pkg temp_sensor --ros-args \
 ### **🎯 Launch File Integration**
 
 #### **Scaling with Launch Files**
+
 ```python
 # launch/multi_sensors.launch.py
 from launch import LaunchDescription
@@ -833,6 +893,7 @@ rqt_graph  # Visual verification
 ### **💡 Pro Tips for Multi-Instance Deployments**
 
 1. **Consistent Naming Convention:**
+
    ```bash
    # Good: Predictable patterns
    /sensors/kitchen_temp, /sensors/bedroom_temp
@@ -842,6 +903,7 @@ rqt_graph  # Visual verification
    ```
 
 2. **Use Namespaces for Grouping:**
+
    ```bash
    # Group related sensors
    /sensors/kitchen_temp
@@ -850,6 +912,7 @@ rqt_graph  # Visual verification
    ```
 
 3. **Parameter Files for Complex Configs:**
+
    ```bash
    ros2 run sensor_pkg temp_sensor --ros-args \
      --params-file config/kitchen_sensor.yaml \
@@ -857,50 +920,112 @@ rqt_graph  # Visual verification
    ```
 
 4. **Service Remapping Too:**
+
    ```bash
    ros2 run sensor_pkg temp_sensor --ros-args \
      --remap __node:=kitchen_temp \
      --remap calibrate:=kitchen/calibrate_sensor
    ```
 
-### Examples
+## Registering executables for ros2 run (Python and C++)
 
-Here are some practical examples:
+To run a node with:
 
 ```bash
-# Start a talker node
-ros2 run demo_nodes_cpp talker
-
-# In another terminal, listen to the topic
-ros2 topic echo /chatter
-
-# Check topic information
-ros2 topic info /chatter
-
-# Call a service
-ros2 service call /add_two_ints example_interfaces/srv/AddTwoInts "{a: 5, b: 3}"
-
-# Record some data
-ros2 bag record /chatter
-
-# Play it back later
-ros2 bag play rosbag2_xxx
+ros2 run <package_name> <executable_name>
 ```
 
-### Pro Tips
+you must register that executable in your package’s build files. Below are minimal, working patterns for Python and C++ packages.
 
-- Use tab completion for commands and topics: `ros2 topic <TAB><TAB>`
-- Most commands support `--help` flag for detailed usage
-- Use `ros2 topic list | grep <pattern>` to filter topics
-- Combine with shell tools: `ros2 node list | wc -l` (count running nodes)
+### Python package (ament_python)
 
-## Contributing
+1. Ensure your node has a callable `main()` in the module:
 
-1. Create your feature branch
-2. Make your changes in the appropriate package
-3. Build and test your changes
-4. Submit a pull request
+```python
+# camera_pkg/transmission.py
 
-## License
+def main():
+    # create node and spin
+    ...
+```
 
-TODO: Add license information
+2. Add a console entry point in `setup.py`:
+
+```python
+from setuptools import setup
+
+setup(
+    name='camera_pkg',
+    # ... other setup args ...
+    entry_points={
+        'console_scripts': [
+            'camera_transmission = camera_pkg.transmission:main',
+            # 'name-you-type'   = python_dotted_path:callable
+        ],
+    },
+)
+```
+
+3. Declare runtime deps (example) in `package.xml`:
+
+```xml
+<exec_depend>rclpy</exec_depend>
+<exec_depend>example_interfaces</exec_depend>
+```
+
+4. Build and source:
+
+```bash
+colcon build --packages-select camera_pkg
+source install/setup.bash
+```
+
+5. Run:
+
+```bash
+ros2 run camera_pkg camera_transmission
+```
+
+Notes:
+
+- The executable name is the left side of the entry (`camera_transmission`).
+- The right side must resolve to `package.module:function` in your source tree.
+- No need to chmod the Python file when using console_scripts.
+
+### C++ package (ament_cmake)
+
+1. Register the target and install it in `CMakeLists.txt`:
+
+```cmake
+add_executable(talker src/talker.cpp)
+ament_target_dependencies(talker rclcpp std_msgs)
+install(TARGETS talker DESTINATION lib/${PROJECT_NAME})
+```
+
+1. Declare runtime deps in `package.xml`:
+
+```xml
+<exec_depend>rclcpp</exec_depend>
+<exec_depend>std_msgs</exec_depend>
+```
+
+1. Build and source:
+
+```bash
+colcon build --packages-select my_cpp_pkg
+source install/setup.bash
+```
+
+1. Run:
+
+```bash
+ros2 run my_cpp_pkg talker
+```
+
+### Verify executables are visible
+
+```bash
+ros2 pkg executables <package_name>
+# Example
+ros2 pkg executables camera_pkg
+```
