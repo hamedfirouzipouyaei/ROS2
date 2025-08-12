@@ -236,10 +236,117 @@ ros2 launch my_py_pkg talk_listen.launch.py
 
 ### Step 9: Record and replay with ros2 bag
 
+ROS 2 bags are essential for recording, storing, and replaying topic data. This is crucial for debugging, testing, and analyzing robot behavior.
+
+#### Basic Recording and Playback
+
+**Record specific topics:**
+
 ```bash
-ros2 bag record /chatter -o demo_bag
-ros2 bag play demo_bag
+# Record a single topic
+ros2 bag record /chatter -o my_demo_bag
+
+# Record multiple topics
+ros2 bag record /chatter /camera/image /robot/pose -o multi_topic_bag
+
+# Record all active topics (use with caution - can create large files)
+ros2 bag record -a -o all_topics_bag
 ```
+
+**Playback recorded data:**
+
+```bash
+# Play back at normal speed
+ros2 bag play my_demo_bag
+
+# Play back at 2x speed
+ros2 bag play my_demo_bag --rate 2.0
+
+# Play back in a loop
+ros2 bag play my_demo_bag --loop
+```
+
+#### Practical Examples
+
+##### Example 1: Debug your activity_02 nodes
+
+```bash
+# Terminal 1: Start your nodes
+ros2 run activity_02 node1
+ros2 run activity_02 node2
+
+# Terminal 2: Record the communication
+ros2 bag record /number /numbr_count -o activity_02_debug
+
+# Terminal 3: Publish test data
+ros2 topic pub -r 1 /number example_interfaces/Int64 '{data: 42}'
+
+# After recording, stop with Ctrl+C, then replay
+ros2 bag play activity_02_debug
+```
+
+##### Example 2: Record camera data for later analysis
+
+```bash
+# Record camera and processing results
+ros2 bag record /camera/image_raw /camera/processed_data -o camera_session_$(date +%Y%m%d_%H%M%S)
+
+# Play back at half speed for detailed analysis
+ros2 bag play camera_session_20250812_143000 --rate 0.5
+```
+
+##### Example 3: Create test datasets
+
+```bash
+# Record sensor data during a specific test scenario
+ros2 bag record /sensors/lidar /sensors/imu /robot/odometry -o test_scenario_1
+
+# Later, replay for algorithm testing (without the robot)
+ros2 bag play test_scenario_1 --topics /sensors/lidar /sensors/imu
+```
+
+#### Bag Information and Management
+
+**Inspect bag contents:**
+
+```bash
+# Show detailed information about a bag
+ros2 bag info my_demo_bag
+
+# Example output shows:
+# - Duration and message count
+# - Topics recorded and their types
+# - Storage format and compression
+```
+
+**Advanced recording options:**
+
+```bash
+# Record with compression (smaller files)
+ros2 bag record /chatter -o compressed_bag --compression-mode file
+
+# Record for a specific duration
+ros2 bag record /chatter -o timed_bag --duration 30
+
+# Record with custom storage format
+ros2 bag record /chatter -o sqlite_bag --storage sqlite3
+```
+
+#### Integration with Development Workflow
+
+**Testing pattern:**
+
+1. Record real robot data: `ros2 bag record -a -o real_robot_data`
+2. Develop algorithms offline: `ros2 bag play real_robot_data --loop`
+3. Record algorithm outputs: `ros2 bag record /algorithm/output -o results`
+4. Compare and analyze: `ros2 bag info results`
+
+**Debugging pattern:**
+
+1. Record problematic behavior: `ros2 bag record /relevant/topics -o bug_reproduction`
+2. Replay exactly: `ros2 bag play bug_reproduction`
+3. Add debug topics during replay: `ros2 run your_package debug_node`
+4. Record debug session: `ros2 bag record /debug/info -o debug_analysis`
 
 ### Step 10: Visualize with rqt and rqt_graph
 
@@ -532,7 +639,7 @@ ros2 topic echo /topic_name --no-arr   # Without arrays
 ros2 topic echo /topic_name --field data.position  # Specific field only
 ```
 
-### Practical Examples
+### Robot Teleoperation Examples
 
 #### Robot Teleoperation
 

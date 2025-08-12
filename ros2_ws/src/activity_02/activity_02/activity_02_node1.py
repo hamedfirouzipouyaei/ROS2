@@ -7,6 +7,7 @@ class node1(Node):
     def __init__(self):
         super().__init__('act_02_node1')
         self.publisher_ = self.create_publisher(Int64, '/number', 10)
+        self.timer = self.create_timer(2.0, self.publish_number)
 
 
     def publish_number(self):

@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "number_publisher = activity_02.activity_02_node1:main"
+            "number_publisher = activity_02.activity_02_node1:main",
+            "number_subscriber = activity_02.activity_02_node2:main"
         ],
     },
 )
